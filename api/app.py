@@ -10,9 +10,6 @@ from dotenv import load_dotenv
 from typing import Annotated 
 from datetime import datetime
 
-
-
-
 # Load environment variables
 load_dotenv()
 
@@ -132,9 +129,9 @@ async def sensor_data(data: Data):
         zone2 = datetime.strptime(str(time2),"%H:%M:%S.%f")        
         zone3 = datetime.strptime(str(time3),"%H:%M:%S.%f")
 
-        off1 = zone1 + datetime.timedelta(minutes=15)
-        off2 = zone2 + datetime.timedelta(minutes=15)
-        off3 = zone3 + datetime.timedelta(minutes=15)
+        off1 = zone1 + datetime.strptime("00:15:00","%H:%M:%S.%f")
+        off2 = zone2 + datetime.strptime("00:15:00","%H:%M:%S.%f")
+        off3 = zone3 + datetime.strptime("00:15:00","%H:%M:%S.%f")
 
 
         zone1off = datetime.strptime(str(off1),"%H:%M:%S.%f")
