@@ -1,5 +1,6 @@
 import datetime
 import os
+import motor.motor_asyncio
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException, Depends, Form
 from pydantic import BaseModel
@@ -9,14 +10,20 @@ from dotenv import load_dotenv
 from typing import Annotated 
 from datetime import datetime
 
+
+
+
 # Load environment variables
 load_dotenv()
 
 # MongoDB connection
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
-DATABASE_NAME = "swahds"
+database_url = os.environ.get('MONGO_URL')
+client = motor.motor_asyncio.AsyncIOMotorClient(database_url)
+db = client.swahds
 COLLECTION_NAME = "user-inputs"
 COLLECTION1_NAME = "sensor-data"
+settings = db[COLLECTION_NAME]
+updates = db[COLLECTION1_NAME]
 
 
 app = FastAPI()
@@ -33,12 +40,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# MongoDB client setup
-client = AsyncIOMotorClient(MONGODB_URL)
-db = client[DATABASE_NAME]
-settings = db[COLLECTION_NAME]
-updates = db[COLLECTION1_NAME]
 
 class Data(BaseModel):
     temperature: float
@@ -154,8 +155,6 @@ async def sensor_data(data: Data):
         zone3off = datetime.strptime(str(off3),"%H:%M:%S.%f")
 
 
-
-
  
     currenttime = datetime.strptime(str(now),"%H:%M:%S.%f")
 
@@ -191,8 +190,6 @@ async def get_schedule():
     raise HTTPException(status_code=404, detail="No schedule found")
 
 
-
-
-if __name__ == '__main__':
+if _name_ == '_main_':
     import uvicorn
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    uvicorn.run(app, host='0.0.0.0', port=8000)
