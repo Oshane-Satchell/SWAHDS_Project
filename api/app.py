@@ -8,7 +8,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
 from typing import Annotated 
-from datetime import datetime
+
 
 # Load environment variables
 load_dotenv()
@@ -51,7 +51,7 @@ class Data(BaseModel):
     moisture2:bool
     moisture3:bool
     central:bool
-    created_at: datetime= datetime.now()
+    created_at: datetime= datetime.datetime.now()
  
 # Define the data model for user inputs
 class UserInput(BaseModel):
@@ -125,35 +125,36 @@ async def sensor_data(data: Data):
         time2 = param[0]["zone2_watering_schedule"]
         time3 = param[0]["zone2_watering_schedule"]
 
-        zone1 = datetime.strptime(str(time1),"%H:%M:%S.%f")
-        zone2 = datetime.strptime(str(time2),"%H:%M:%S.%f")        
-        zone3 = datetime.strptime(str(time3),"%H:%M:%S.%f")
+        zone1 = datetime.datetime.strptime(str(time1),"%H:%M:%S.%f")
+        zone2 = datetime.datetime.strptime(str(time2),"%H:%M:%S.%f")        
+        zone3 = datetime.datetime.strptime(str(time3),"%H:%M:%S.%f")
 
-        off1 = zone1 + datetime.strptime("00:15:00","%H:%M:%S.%f")
-        off2 = zone2 + datetime.strptime("00:15:00","%H:%M:%S.%f")
-        off3 = zone3 + datetime.strptime("00:15:00","%H:%M:%S.%f")
+        off1 = zone1 + datetime.timedelta(minutes=15)
+        off2 = zone2 + datetime.timedelta(minutes=15)
+        off3 = zone3 + datetime.timedelta(minutes=15)
 
-
-        zone1off = datetime.strptime(str(off1),"%H:%M:%S.%f")
-        zone2off = datetime.strptime(str(off2),"%H:%M:%S.%f")        
-        zone3off = datetime.strptime(str(off3),"%H:%M:%S.%f")
+        zone1off = datetime.datetime.strptime(str(off1),"%H:%M:%S.%f")
+        zone2off = datetime.datetime.strptime(str(off2),"%H:%M:%S.%f")        
+        zone3off = datetime.datetime.strptime(str(off3),"%H:%M:%S.%f")
 
     else:
-        zone1 = datetime.strptime(str(now),"%H:%M:%S.%f")
-        zone2 = datetime.strptime(str(now),"%H:%M:%S.%f")        
-        zone3 = datetime.strptime(str(now),"%H:%M:%S.%f")
+        zone1 = datetime.datetime.strptime(str(now),"%H:%M:%S.%f")
+        zone2 = datetime.datetime.strptime(str(now),"%H:%M:%S.%f")        
+        zone3 = datetime.datetime.strptime(str(now),"%H:%M:%S.%f")
 
-        off1 = zone1 + datetime.strptime("00:15:00","%H:%M:%S.%f")
-        off2 = zone2 + datetime.strptime("00:15:00","%H:%M:%S.%f")
-        off3 = zone3 + datetime.strptime("00:15:00","%H:%M:%S.%f")
+        off1 = zone1 + datetime.timedelta(minutes=15)
+        off2 = zone2 + datetime.timedelta(minutes=15)
+        off3 = zone3 + datetime.timedelta(minutes=15)
 
-        zone1off = datetime.strptime(str(off1),"%H:%M:%S.%f")
-        zone2off = datetime.strptime(str(off2),"%H:%M:%S.%f")        
-        zone3off = datetime.strptime(str(off3),"%H:%M:%S.%f")
+        zone1off = datetime.datetime.strptime(str(off1),"%H:%M:%S.%f")
+        zone2off = datetime.datetime.strptime(str(off2),"%H:%M:%S.%f")        
+        zone3off = datetime.datetime.strptime(str(off3),"%H:%M:%S.%f")
+
+
 
 
  
-    currenttime = datetime.strptime(str(now),"%H:%M:%S.%f")
+    currenttime = datetime.datetime.strptime(str(now),"%H:%M:%S.%f")
 
 
     data["moisture1"] = (float(data["zone1_soil_moisture"]) >= MOISTURE_THRESHOLD_HIGH and zone1 < currenttime < zone1off )
@@ -184,5 +185,4 @@ async def get_schedule():
     data = await updates.find().sort([('$natural', -1)]).limit(1).to_list(1)
     if data:
         return data[0]
-    raise HTTPException(status_code=404, detail="No schedule found")
-
+    raise HTTPException(status_code=404, detail="No schedule found")
