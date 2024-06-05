@@ -1,4 +1,4 @@
-# SWAHDS_Project
+# SMART WATER HARVESTING AND DISTRIBUTION SYSTEM (SWAHDS) Project
 This repository contains the files used in the development of the Smart Water Harvesting and Distribution System Capstone Project
 
 ECNG 3020 Project Proposal 2022/2023
