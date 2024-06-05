@@ -1,0 +1,190 @@
+#include <Arduino.h>
+#include <Wifi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include "DHT.h"
+#include <LiquidCrystal_I2C.h>
+
+const char *ssid = ""; // WiFi SSID
+const char *password = ""; // WiFi password
+const char *endpoint = ""; // API endpoint
+
+
+// Define pins for DHT11 sensor
+#define DHTTYPE DHT11
+#define DHTPIN 12
+
+// Define pins for LCD
+LiquidCrystal_I2C lcd(0x27, 16, 2);  
+
+// Define pins for soil moisture sensors
+#define MOISTURE_SENSOR_1_PIN 13
+#define MOISTURE_SENSOR_2_PIN 4
+#define MOISTURE_SENSOR_3_PIN 15
+
+// Define pins for solenoid valves
+#define RAIN_WATER_TANK_VALVE_PIN 32
+#define NWC_TANK_INPUT_VALVE_PIN 33
+#define NWC_TANK_OUTPUT_VALVE_PIN 25
+#define CENTRAL_PUMP_VALVE_PIN 23
+#define ZONE_ONE_VALVE_PIN 26
+#define ZONE_TWO_VALVE_PIN 19
+#define ZONE_THREE_VALVE_PIN 14
+
+// Define moisture threshold values
+#define MOISTURE_THRESHOLD_HIGH 2500
+#define MOISTURE_THRESHOLD_LOW 1500
+
+// Define reed switch pin
+const int FS_RWT = 2; // Pin connected to reed switch
+const int FS_NWC = 36; // Pin connected to NWC float switch
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  // Initialize serial communication
+  Serial.begin(9600);
+
+  // Initialize DHT sensor
+  dht.begin();
+
+  // Initialize LCD
+  lcd.init();
+  lcd.backlight();
+
+   // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to WiFi...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("WiFi connected.");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  // Set pin modes for moisture sensors
+  pinMode(MOISTURE_SENSOR_1_PIN, INPUT);
+  pinMode(MOISTURE_SENSOR_2_PIN, INPUT);
+  pinMode(MOISTURE_SENSOR_3_PIN, INPUT);
+
+  // Set pin modes for solenoid valves
+  pinMode(RAIN_WATER_TANK_VALVE_PIN, OUTPUT);
+  pinMode(NWC_TANK_INPUT_VALVE_PIN, OUTPUT);
+  pinMode(NWC_TANK_OUTPUT_VALVE_PIN, OUTPUT);
+  pinMode(CENTRAL_PUMP_VALVE_PIN, OUTPUT);
+  pinMode(ZONE_ONE_VALVE_PIN, OUTPUT);
+  pinMode(ZONE_TWO_VALVE_PIN, OUTPUT);
+  pinMode(ZONE_THREE_VALVE_PIN, OUTPUT);
+
+  // Set pin mode for reed switch with internal pull-down resistor
+  pinMode(FS_RWT, INPUT_PULLDOWN);
+  pinMode(FS_NWC, INPUT_PULLDOWN);
+}
+
+
+void loop() {
+  //Check WiFi connection status
+  if(WiFi.status()== WL_CONNECTED){
+    Serial.println("");
+    Serial.println("");
+
+    HTTPClient http;
+  
+    // Establish a connection to the server
+    String url = "https://" + String(endpoint) + "/sensor-data";
+    http.begin(url);
+    http.addHeader("Content-type", "application/json");
+
+    JsonDocument docput;
+    String httpRequestData;
+
+    // Serialise JSON object into a string to be sent to the API
+    docput["rain_water_level"]    = digitalRead(FS_RWT);
+    docput["nwc_water_level"]     = digitalRead(FS_NWC);
+    docput["zone1_soil_moisture"] = analogRead(MOISTURE_SENSOR_1_PIN);
+    docput["zone2_soil_moisture"] = analogRead(MOISTURE_SENSOR_2_PIN);
+    docput["zone3_soil_moisture"] = analogRead(MOISTURE_SENSOR_3_PIN);
+
+    // convert JSON document, doc, to string and copies it into httpRequestData
+    serializeJson(docput, httpRequestData);
+
+    // Send HTTP PUT request
+    int httpResponseCode = http.POST(httpRequestData);
+    String http_response;
+
+    // check reuslt of PUT request. negative response code means server wasn't reached
+    if (httpResponseCode>0) {
+      Serial.print("HTTP Response code: ");
+      Serial.println(httpResponseCode);
+
+      Serial.print("HTTP Response from server: ");
+      http_response = http.getString();
+      Serial.println(http_response);
+    }
+    else {
+      Serial.print("Error code: ");
+      Serial.println(httpResponseCode);
+    }
+
+    http.end();
+
+
+    url = "https://" + String(endpoint) + "/get-sensor";    
+    http.begin(url);
+    httpResponseCode = http.GET();
+
+    Serial.println("");
+    Serial.println("");
+
+    if (httpResponseCode>0) {
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+
+        Serial.print("Response from server: ");
+        http_response = http.getString();
+        Serial.println(http_response);
+      }
+      else {
+        Serial.print("Error code: ");
+        Serial.println(httpResponseCode);
+    }
+ 
+    JsonDocument docget;
+
+    DeserializationError error = deserializeJson(docget, http_response);
+
+    if (error) {
+      Serial.print("deserializeJson() failed: ");
+      Serial.println(error.c_str());
+      return;
+    }
+
+    docput["rain_water_level"]    = digitalRead(FS_RWT);
+    docput["nwc_water_level"]     = digitalRead(FS_NWC);
+    docput["zone1_soil_moisture"] = analogRead(MOISTURE_SENSOR_1_PIN);
+    docput["zone2_soil_moisture"] = analogRead(MOISTURE_SENSOR_2_PIN);
+    docput["zone3_soil_moisture"] = analogRead(MOISTURE_SENSOR_3_PIN);
+    
+    bool proximity = docget["rain_water_level"]; 
+    bool level = docget["nwc_water_level"]; 
+    bool moisture1 = docget["moisture1"];
+    bool moisture2 = docget["moisture2"];
+    bool moisture3 = docget["moisture3"];
+    bool central = docget["central"];
+
+    digitalWrite(RAIN_WATER_TANK_VALVE_PIN, proximity);
+    digitalWrite(NWC_TANK_OUTPUT_VALVE_PIN, !proximity);
+    digitalWrite(NWC_TANK_INPUT_VALVE_PIN, level);
+    digitalWrite(ZONE_ONE_VALVE_PIN, moisture1);
+    digitalWrite(ZONE_TWO_VALVE_PIN, moisture2);
+    digitalWrite(ZONE_THREE_VALVE_PIN, moisture3);
+    digitalWrite(CENTRAL_PUMP_VALVE_PIN, central);
+
+    // Free resources
+    http.end();
+  }
+  else {
+    Serial.println("WiFi Disconnected");
+  }
+}
