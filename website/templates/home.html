@@ -34,9 +34,9 @@
     <div class="col-md-6">
       <div class="container text-center"> <!-- Align the Manual Control section to the right -->
         <h2>MANUAL CONTROL</h2>
-        <button type="button" class="btn btn-primary">Start Irrigation</button>
-        <button type="button" class="btn btn-danger">Emergency Stop</button>
-        <button type="button" class="btn btn-secondary">RESET SYSTEM</button>
+        <button type="button" class="btn btn-primary" id="start-pump">Start Irrigation</button>
+        <button type="button" class="btn btn-danger" id="stop-pump">Emergency Stop</button>
+        <button type="button" class="btn btn-secondary" id="reset-system">RESET SYSTEM</button>
     </div>
 
         <!-- USER INPUT section -->
@@ -67,4 +67,52 @@
     </div>
   </div>
 </div>
+
+<script>
+document.getElementById('start-pump').addEventListener('click', function() {
+    fetch('http://127.0.0.1:8000/start-pump', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Pump started successfully');
+            } else {
+                alert('Failed to start pump');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+});
+
+document.getElementById('stop-pump').addEventListener('click', function() {
+    fetch('http://127.0.0.1:8000/stop-pump', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Pump stopped successfully');
+            } else {
+                alert('Failed to stop pump');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+});
+
+document.getElementById('reset-system').addEventListener('click', function() {
+    fetch('http://127.0.0.1:8000/reset-system', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('System reset successfully');
+            } else {
+                alert('Failed to reset system');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+});
+</script>
+
 {% endblock %}
