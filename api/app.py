@@ -42,7 +42,6 @@ class Data(BaseModel):
     zone1_soil_moisture: float
     zone2_soil_moisture: float
     zone3_soil_moisture: float
-
     moisture1: bool
     moisture2: bool
     moisture3: bool
@@ -50,7 +49,6 @@ class Data(BaseModel):
     created_at: datetime.datetime = datetime.datetime.now()
 
 
-# Define the data model for user inputs
 class UserInput(BaseModel):
     zone1_plant_name: Annotated[str, Form()]
     zone1_watering_schedule: Annotated[str, Form()]
@@ -73,7 +71,7 @@ class UserInput(BaseModel):
         zone2_watering_intervals: int = Form(...),
         zone3_plant_name: str = Form(...),
         zone3_watering_schedule: str = Form(...),
-        zone3_watering_intervals: int = Form(...),
+        zone3_watering_intervals: int = Form(...)
     ):
         return cls(
             zone1_plant_name=zone1_plant_name,
@@ -90,7 +88,6 @@ class UserInput(BaseModel):
 
 MOISTURE_THRESHOLD_HIGH = 2500
 MOISTURE_THRESHOLD_LOW = 1500
-
 
 @app.post("/log-inputs")
 async def log_inputs(user_input: UserInput = Depends(UserInput.as_form)):
@@ -120,7 +117,7 @@ async def sensor_data(data: Data):
     if param:
         time1 = param[0].zone1_watering_schedule
         time2 = param[0].zone2_watering_schedule
-        time3 = param[0].zone2_watering_schedule
+        time3 = param[0].zone3_watering_schedule
 
         zone1 = datetime.datetime.strptime(str(time1), "%H:%M:%S.%f")
         zone2 = datetime.datetime.strptime(str(time2), "%H:%M:%S.%f")
@@ -154,15 +151,20 @@ async def sensor_data(data: Data):
     data.moisture3 = (float(data.zone3_soil_moisture) >= MOISTURE_THRESHOLD_HIGH and zone3 < currenttime < zone3off)
     data.central = (data.moisture1 or data.moisture2 or data.moisture3)
 
-   
     new_settings = await updates.insert_one(data.dict())
     new_obj = await updates.find_one({"_id": new_settings.inserted_id})
     new_obj['_id'] = str(new_obj['_id'])
 
     if new_obj:
+        # Determine whether to start or stop the pump
+        start_pump = (not data.rain_water_level and (data.moisture1 or data.moisture2 or data.moisture3))
+        stop_pump = data.rain_water_level or (data.zone1_soil_moisture >= MOISTURE_THRESHOLD_HIGH and data.zone2_soil_moisture >= MOISTURE_THRESHOLD_HIGH and data.zone3_soil_moisture >= MOISTURE_THRESHOLD_HIGH)
+        new_obj["start_pump"] = start_pump
+        new_obj["stop_pump"] = stop_pump
         return new_obj
+
     raise HTTPException(status_code=500, detail="Failed to log user input")
-from bson import ObjectId
+
 
 @app.get("/get-schedule")
 async def get_schedule():
@@ -179,4 +181,19 @@ async def get_sensor():
     if data:
         data[0]['_id'] = str(data[0]['_id'])  # Convert ObjectId to string
         return data[0]
-    raise HTTPException(status_code=404, detail="No sensor data found")
+    raise HTTPException(status_code=404, detail="No sensor data found")
+
+@app.post("/start-pump")
+async def start_pump():
+    # Logic to start the pump
+    return {"success": True}
+
+@app.post("/stop-pump")
+async def stop_pump():
+    # Logic to stop the pump
+    return {"success": True}
+
+@app.post("/reset-system")
+async def reset_system():
+    # Logic to reset the system
+    return {"success": True}
