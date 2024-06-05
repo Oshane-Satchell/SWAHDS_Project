@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1 align="center">Smart Water Harvesting and Distribution System</h1>
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <h2>SYSTEM DATA</h2>
+      <div class="form-group">
+        <label for="temperature">Temperature:</label>
+        <p class="form-control-static">{{ system_data.temperature }}</p>
+      </div>
+      <div class="form-group">
+        <label for="humidity">Humidity:</label>
+        <p class="form-control-static">{{ system_data.humidity }}</p>
+      </div>
+      <div class="form-group">
+        <label for="raining">Raining:</label>
+        <p class="form-control-static">{{ system_data.raining }}</p>
+      </div>
+      <div class="form-group">
+        <label for="soil_moisture_zone_1">Soil Moisture (Zone 1):</label>
+        <p class="form-control-static">{{ system_data.soil_moisture_zone_1 }}</p>
+      </div>
+      <div class="form-group">
+        <label for="soil_moisture_zone_2">Soil Moisture (Zone 2):</label>
+        <p class="form-control-static">{{ system_data.soil_moisture_zone_2 }}</p>
+      </div>
+      <div class="form-group">
+        <label for="soil_moisture_zone_3">Soil Moisture (Zone 3):</label>
+        <p class="form-control-static">{{ system_data.soil_moisture_zone_3 }}</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="container text-center"> <!-- Align the Manual Control section to the right -->
+        <h2>MANUAL CONTROL</h2>
+        <button type="button" class="btn btn-primary">Start Irrigation</button>
+        <button type="button" class="btn btn-danger">Emergency Stop</button>
+        <button type="button" class="btn btn-secondary">RESET SYSTEM</button>
+    </div>
+
+        <!-- USER INPUT section -->
+        <h2>USER INPUT</h2>
+        <form id="user-input-form" action="http://127.0.0.1:8000/log-inputs" method="post">
+          <div class="form-group">
+            <label for="zone1_plant_name">Zone 1 Plant Name:</label>
+            <input type="text" class="form-control" id="zone1_plant_name" name="zone1_plant_name">
+            <label for="zone1_watering_schedule">Watering Schedule (Time):</label>
+            <input type="time" class="form-control" id="zone1_watering_schedule" name="zone1_watering_schedule" step="1">
+          </div>
+          <div class="form-group">
+            <label for="zone2_plant_name">Zone 2 Plant Name:</label>
+            <input type="text" class="form-control" id="zone2_plant_name" name="zone2_plant_name">
+            <label for="zone2_watering_schedule">Watering Schedule (Time):</label>
+            <input type="time" class="form-control" id="zone2_watering_schedule" name="zone2_watering_schedule" step="1">
+          </div>
+          <div class="form-group">
+            <label for="zone3_plant_name">Zone 3 Plant Name:</label>
+            <input type="text" class="form-control" id="zone3_plant_name" name="zone3_plant_name">
+            <label for="zone3_watering_schedule">Watering Schedule (Time):</label>
+            <input type="time" class="form-control" id="zone3_watering_schedule" name="zone3_watering_schedule" step="1">
+          </div>
+          <!-- Submit button for user inputs -->
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
