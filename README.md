@@ -34,7 +34,7 @@ This project proposes to alleviate some of the issues faced by the consumers, by
 
 §  The system should be able to recognize when the rainwater tank is at a critical level and automatically switch to the NWC water supply (tank)
 
-§  The system should via a mobile app inform the consumer of the state of the system and allow for virtual reset and overrides.
+§  The system should via a website inform the consumer of the state of the system and allow for virtual reset and overrides.
 
  
 
