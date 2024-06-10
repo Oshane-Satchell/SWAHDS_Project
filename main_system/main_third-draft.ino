@@ -5,9 +5,9 @@
 #include "DHT.h"
 #include <LiquidCrystal_I2C.h>
 
-const char *ssid = "your_SSID"; // WiFi SSID
-const char *password = "your_PASSWORD"; // WiFi password
-const char *endpoint = "your_API_endpoint"; // API endpoint
+const char *ssid = ""; // WiFi SSID
+const char *password = ""; // WiFi password
+const char *endpoint = ""; // API endpoint
 
 // Define pins for DHT11 sensor
 #define DHTTYPE DHT11
